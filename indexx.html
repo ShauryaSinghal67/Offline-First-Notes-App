@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Offline Notes App</title>
+<style>
+body { font-family: Arial; background:#f2f2f2; padding:20px; }
+.card { background:white; padding:18px; max-width:350px; margin:auto; border-radius:10px; }
+input, textarea { width:100%; padding:10px; margin:8px 0; }
+button { padding:8px 14px; margin:6px 0; }
+.note { background:#fff; border:1px solid #ccc; padding:10px; margin:8px 0; border-radius:6px; }
+.hidden { display:none; }
+</style>
+</head>
+<body>
+
+<div class="card" id="loginBox">
+  <h2>Login / Signup</h2>
+  <input id="email" placeholder="Email">
+  <input id="pass" placeholder="Password" type="password">
+  <button onclick="signup()">Sign up</button>
+  <button onclick="login()">Login</button>
+  <p id="msg" style="color:red;"></p>
+</div>
+
+<div class="card hidden" id="notesBox">
+  <h2>Your Notes</h2>
+  <p>Logged in as <b id="userEmail"></b></p>
+  <textarea id="noteText" placeholder="Write your note..."></textarea>
+  <button onclick="saveNote()">Save Note</button>
+  <h3>Saved Notes</h3>
+  <div id="list"></div>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<script>
+let currentUser = null;
+
+function signup(){
+  let emailV = email.value.trim();
+  let passV = pass.value.trim();
+  if(!emailV || !passV){
+    msg.textContent = "Enter email & password";
+    return;
+  }
+  // If already exists
+  if(localStorage.getItem("user_"+emailV)){
+    msg.textContent = "User already exists";
+    return;
+  }
+  localStorage.setItem("user_"+emailV, passV);
+  msg.textContent = "Signup successful! Now login.";
+}
+
+function login(){
+  let emailV = email.value.trim();
+  let passV = pass.value.trim();
+
+  if(localStorage.getItem("user_"+emailV) === passV){
+    currentUser = emailV;
+    userEmail.textContent = currentUser;
+    loginBox.classList.add("hidden");
+    notesBox.classList.remove("hidden");
+    loadNotes();
+  } else {
+    msg.textContent = "Wrong email or password";
+  }
+}
+
+function saveNote(){
+  let txt = noteText.value.trim();
+  if(!txt) return;
+  let arr = JSON.parse(localStorage.getItem("notes_"+currentUser) || "[]");
+  arr.push(txt);
+  localStorage.setItem("notes_"+currentUser, JSON.stringify(arr));
+  noteText.value = "";
+  loadNotes();
+}
+
+function loadNotes(){
+  let arr = JSON.parse(localStorage.getItem("notes_"+currentUser) || "[]");
+  list.innerHTML = "";
+  arr.forEach(n=>{
+    list.innerHTML += `<div class='note'>${n}</div>`;
+  });
+}
+
+function logout(){
+  currentUser = null;
+  notesBox.classList.add("hidden");
+  loginBox.classList.remove("hidden");
+}
+</script>
+
+</body>
+</html>
